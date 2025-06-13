@@ -63,6 +63,35 @@ function Player(name, marker) {
   return { getName, getMarker };
 }
 
+const uiGrid = document.querySelector(".game-grid");
+const circleIcon = "./img/circle.png";
+const crossIcon = "./img/cross.png";
+
+const displayGame = (function () {
+  const renderGame = () => {
+    uiGrid.innerHTML = "";
+    const grid = gameGrid.getGrid();
+    for (row of grid) {
+      for (cell of row) {
+        const uiCell = document.createElement("div");
+        uiCell.className = "cell";
+        const img = document.createElement("img");
+        if (cell.getValue() === "X") {
+          img.src = crossIcon;
+        } else if (cell.getValue() === "O") {
+          img.src = circleIcon;
+        }
+        uiCell.appendChild(img);
+        uiGrid.appendChild(uiCell);
+      }
+    }
+  };
+
+  return { renderGame };
+})();
+
+displayGame.renderGame();
+
 /* Game flow */
 const game = (function () {
   const player1 = Player("Player 1", "X");
@@ -118,21 +147,12 @@ const game = (function () {
         status = "win";
         break;
       }
-
-      for (let j = 0; j < column; j++) {
-        if ((i + j) % 2 != 0) {
-          break;
-        }
-      }
     }
 
     /* Check diagonal win */
     let diagonal1 = grid.map((row, i) => row[i]);
     let diagonal2 = grid.map((row, i) => row[row.length - i - 1]);
-    console.log(
-      diagonal1.map((cell) => cell.getValue()),
-      diagonal2.map((cell) => cell.getValue())
-    );
+
     if (
       diagonal1.every(
         (cell) =>
@@ -171,6 +191,7 @@ const game = (function () {
 
       return;
     }
+    displayGame.renderGame();
 
     checkGameStatus();
     switchPlayer();
