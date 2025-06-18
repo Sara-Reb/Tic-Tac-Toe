@@ -3,7 +3,7 @@ const gameGrid = (function () {
   const rows = 3;
   const columns = 3;
 
-  const grid = [];
+  let grid = [];
 
   for (let i = 0; i < rows; i++) {
     grid[i] = [];
@@ -32,7 +32,16 @@ const gameGrid = (function () {
     console.log(gridValues);
   };
 
-  return { getGrid, addMarker, printGrid };
+  const resetGrid = () => {
+    for (let i = 0; i < rows; i++) {
+      grid[i] = [];
+      for (let j = 0; j < columns; j++) {
+        grid[i].push(Cell());
+      }
+    }
+  };
+
+  return { getGrid, addMarker, printGrid, resetGrid };
 })();
 
 /* Cell */
@@ -66,6 +75,8 @@ function Player(name, marker) {
 const uiGrid = document.querySelector(".game-grid");
 const circleIcon = "./img/circle.png";
 const crossIcon = "./img/cross.png";
+const communicationDiv = document.querySelector(".communication");
+const resetButton = document.querySelector(".reset");
 
 const displayGame = (function () {
   const renderGame = () => {
@@ -75,19 +86,39 @@ const displayGame = (function () {
       for (cell of row) {
         const uiCell = document.createElement("div");
         uiCell.className = "cell";
+        uiCell.dataset.row = `${grid.indexOf(row)}`;
+        uiCell.dataset.col = `${row.indexOf(cell)}`;
+
         const img = document.createElement("img");
         if (cell.getValue() === "X") {
           img.src = crossIcon;
+          uiCell.appendChild(img);
         } else if (cell.getValue() === "O") {
           img.src = circleIcon;
+          uiCell.appendChild(img);
         }
-        uiCell.appendChild(img);
+        uiCell.addEventListener("click", (e) => {
+          const row = e.currentTarget.dataset.row;
+          const col = e.currentTarget.dataset.col;
+          console.log({ row, col });
+          game.playRound(row, col);
+        });
         uiGrid.appendChild(uiCell);
       }
     }
   };
 
-  return { renderGame };
+  const renderCommunication = function (text, status = "play") {
+    communicationDiv.innerHTML = "";
+    const message = document.createElement("p");
+    message.innerText = text;
+    if (status != "play") {
+      message.classList.add("final");
+    }
+    communicationDiv.appendChild(message);
+  };
+
+  return { renderGame, renderCommunication };
 })();
 
 displayGame.renderGame();
@@ -99,6 +130,8 @@ const game = (function () {
 
   const players = [player1, player2];
 
+  let status = "play";
+
   let activePlayer = players[0];
 
   const switchPlayer = () => {
@@ -109,14 +142,7 @@ const game = (function () {
     return activePlayer;
   };
 
-  const printNewRound = () => {
-    gameGrid.printGrid();
-    console.log(`${getActivePlayer().getName()}'s turn.`);
-  };
-
   const checkGameStatus = () => {
-    let status = "play";
-
     const grid = gameGrid.getGrid();
     let row = grid.length;
     let column = grid[0].length;
@@ -170,37 +196,66 @@ const game = (function () {
     if (grid.every((row) => row.every((cell) => cell.getValue() != ""))) {
       status = status === "win" ? "win" : "tie";
     }
+  };
 
-    console.log(status);
+  const resetGame = () => {
+    status = "play";
+    activePlayer = players[0];
+    /* Initial message */
+    const text = `${getActivePlayer().getName()}'s turn`;
+    displayGame.renderCommunication(text);
+  };
+
+  const getStatus = () => {
     return status;
   };
 
   const playRound = (row, column) => {
-    console.log(
-      `${getActivePlayer().getName()} put ${getActivePlayer().getMarker()} on the grid`
-    );
+    if (getStatus() != "play") {
+      console.log(getStatus());
+      return;
+    }
     const round = gameGrid.addMarker(
       getActivePlayer().getMarker(),
       row,
       column
     );
     if (round === "invalid") {
-      console.log("The cell is occupied");
       gameGrid.printGrid();
-      console.log(`${getActivePlayer().getName()}'s turn.`);
+      const text = `${getActivePlayer().getName()}'s turn.`;
+      displayGame.renderCommunication(text);
 
       return;
     }
     displayGame.renderGame();
 
     checkGameStatus();
-    switchPlayer();
-    printNewRound();
+    const status = getStatus();
+    console.log(status);
+    if (status === "win") {
+      const text = `${getActivePlayer().getName()} wins!`;
+      displayGame.renderCommunication(text, status);
+    } else if (status === "tie") {
+      console.log(status);
+
+      const text = `Tie!`;
+      displayGame.renderCommunication(text, status);
+    } else {
+      switchPlayer();
+      const text = `${getActivePlayer().getName()}'s turn.`;
+      displayGame.renderCommunication(text, status);
+    }
   };
 
   /* Initial message */
-  console.log("Let's start!");
-  printNewRound();
+  const text = `${getActivePlayer().getName()}'s turn`;
+  displayGame.renderCommunication(text);
 
-  return { getActivePlayer, playRound };
+  return { getActivePlayer, playRound, resetGame };
 })();
+
+resetButton.addEventListener("click", () => {
+  gameGrid.resetGrid();
+  game.resetGame();
+  displayGame.renderGame();
+});
