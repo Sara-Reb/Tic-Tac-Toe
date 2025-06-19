@@ -82,6 +82,68 @@ img {
 }
 
 .reset {
+  border: 4px dashed black;
+}
+
+/* players names form dialog */
+dialog {
+  margin: auto;
+  font-size: 2rem;
+  transition: all 0.4s;
+  opacity: 0;
+  border: 4px dashed black;
+  border-radius: 1rem;
+  padding: 2rem;
+  height: 50vh;
+}
+
+dialog::backdrop {
+  backdrop-filter: blur(4px);
+}
+
+dialog:open {
+  opacity: 1;
+}
+
+@starting-style {
+  dialog:open {
+    opacity: 0;
+  }
+}
+
+form {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+}
+
+form div {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+form > div {
+  gap: 1.5rem;
+}
+
+form input {
+  padding: 0.5rem;
+  outline: none;
+  border-radius: 0.5rem;
+  border: 1px solid gray;
+}
+
+form input:focus {
+  box-shadow: 2px 2px 5px gray;
+  transition: all 0.2s;
+}
+
+/* Buttons */
+
+button {
   width: 300px;
   padding: 1rem;
   border-radius: 0.5rem;
@@ -90,10 +152,9 @@ img {
   font-size: 1.5rem;
   box-shadow: 2px 2px 5px gray;
   background: none;
-  border: 4px dashed black;
   transition: all 0.2s;
 }
 
-.reset:hover {
+button:hover {
   transform: scale(1.1);
 }

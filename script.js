@@ -100,7 +100,6 @@ const displayGame = (function () {
         uiCell.addEventListener("click", (e) => {
           const row = e.currentTarget.dataset.row;
           const col = e.currentTarget.dataset.col;
-          console.log({ row, col });
           game.playRound(row, col);
         });
         uiGrid.appendChild(uiCell);
@@ -121,25 +120,33 @@ const displayGame = (function () {
   return { renderGame, renderCommunication };
 })();
 
-displayGame.renderGame();
-
 /* Game flow */
 const game = (function () {
-  const player1 = Player("Player 1", "X");
-  const player2 = Player("Player 2", "O");
-
-  const players = [player1, player2];
+  let players;
 
   let status = "play";
 
-  let activePlayer = players[0];
+  let activePlayer;
 
   const switchPlayer = () => {
+    console.log(players);
     activePlayer = activePlayer === players[0] ? players[1] : players[0];
   };
 
   const getActivePlayer = () => {
     return activePlayer;
+  };
+
+  const startGame = (playersNames) => {
+    const player1 = Player(playersNames[0], "X");
+    const player2 = Player(playersNames[1], "O");
+    status = "play";
+    players = [player1, player2];
+    activePlayer = players[0];
+    /* Initial message */
+    const text = `${getActivePlayer().getName()}'s turn`;
+    displayGame.renderCommunication(text);
+    displayGame.renderGame();
   };
 
   const checkGameStatus = () => {
@@ -198,14 +205,6 @@ const game = (function () {
     }
   };
 
-  const resetGame = () => {
-    status = "play";
-    activePlayer = players[0];
-    /* Initial message */
-    const text = `${getActivePlayer().getName()}'s turn`;
-    displayGame.renderCommunication(text);
-  };
-
   const getStatus = () => {
     return status;
   };
@@ -247,15 +246,28 @@ const game = (function () {
     }
   };
 
-  /* Initial message */
-  const text = `${getActivePlayer().getName()}'s turn`;
-  displayGame.renderCommunication(text);
-
-  return { getActivePlayer, playRound, resetGame };
+  return { getActivePlayer, playRound, startGame };
 })();
 
 resetButton.addEventListener("click", () => {
   gameGrid.resetGrid();
-  game.resetGame();
-  displayGame.renderGame();
+  newGame();
 });
+
+const dialog = document.querySelector("dialog");
+const form = document.querySelector("form");
+form.addEventListener("submit", newGame);
+
+function newGame(e) {
+  dialog.showModal();
+  if (e) e.preventDefault(dialog.close());
+  const player1 = document.querySelector("#player1").value;
+  const player2 = document.querySelector("#player2").value;
+  let players = [player1, player2];
+  players = players.map(
+    (val, i) => (val = val === "" ? `Player ${i + 1}` : val)
+  );
+  game.startGame(players);
+}
+
+newGame();
