@@ -152,7 +152,6 @@ const game = (function () {
   const checkGameStatus = () => {
     const grid = gameGrid.getGrid();
     let row = grid.length;
-    let column = grid[0].length;
 
     for (let i = 0; i < row; i++) {
       /* Check for row win */
@@ -201,7 +200,9 @@ const game = (function () {
 
     /* Check for tie */
     if (grid.every((row) => row.every((cell) => cell.getValue() != ""))) {
+      console.log(status);
       status = status === "win" ? "win" : "tie";
+      console.log(status);
     }
   };
 
@@ -211,7 +212,6 @@ const game = (function () {
 
   const playRound = (row, column) => {
     if (getStatus() != "play") {
-      console.log(getStatus());
       return;
     }
     const round = gameGrid.addMarker(
